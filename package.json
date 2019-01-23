@@ -1,0 +1,14 @@
+{
+  "name": "notes-app",
+  "version": "1.0.0",
+  "description": "App for tracking notes, tasks, reminders",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node-sass src/scss/main.scss assets/css/main.css -w"
+  },
+  "author": "Aleksey",
+  "license": "ISC",
+  "devDependencies": {
+    "node-sass": "^4.11.0"
+  }
+}
