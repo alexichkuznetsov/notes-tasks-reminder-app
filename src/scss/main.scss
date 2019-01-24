@@ -9,6 +9,34 @@
 
     box-shadow: 0 1rem 1rem rgba(#000, .1);
     position: relative;
+
+    @media only screen and (max-width: $bp-md) {
+        height: 8rem;
+    }
+
+    &__open-btn {
+        display: none;
+
+        border: none;
+        border-radius: 0;
+        background-color: transparent;
+
+        width: 6rem;
+        height: 6rem;
+
+        position: absolute;
+        top: 1rem;
+        left: 2rem;
+
+        @media only screen and (max-width: $bp-sm) { display: block; }
+    }
+
+    &__open-icon {
+        width: 100%;
+        height: 100%;
+
+        fill: $color-blue-primary;
+    }
 }
 
 .nav-list {
@@ -18,11 +46,62 @@
     display: flex;
     justify-content: center;
 
+    @media only screen and (max-width: $bp-sm) {
+        position: fixed;
+        top: 0;
+        // left: 0;
+        left: -100%;
+        z-index: 10;
+
+        width: 100vw;
+        height: 100vh;
+
+        background-color: $color-grey-1;
+
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+
+        padding: 6rem 2rem 6rem 8rem;
+    }
+
+    &__close-btn {
+        display: none;
+
+        position: absolute;
+        top: 1.6rem;
+        right: 2rem;
+
+        @media only screen and (max-width: $bp-sm) {
+            display: block;
+        }
+    }
+
+    &__close-icon {
+        width: 6rem;
+        height: 6rem;
+
+        fill: $color-blue-primary;
+    }
+
     &__item {
         flex: 0 0 22rem;
 
         &:not(:last-child) {
             margin-right: 2rem;
+
+            @media only screen and (max-width: $bp-md) {
+                margin-right: 0;
+            }
+        }
+
+        @media only screen and (max-width: $bp-md) {
+            flex: 1;
+        }
+
+        @media only screen and (max-width: $bp-sm) {
+            flex: 0 0 auto;
+            padding: 2rem 0;
         }
     }
 
@@ -50,6 +129,11 @@
         &:active {
             background-color: darken($color-grey-1, 3%);
         }
+
+        @media only screen and (max-width: $bp-md) {
+            flex-flow: row nowrap;
+            justify-content: center;
+        }
     }
 
     &__icon {
@@ -58,6 +142,18 @@
         height: 5.8rem;
 
         fill: $color-blue-primary;
+
+        @media only screen and (max-width: $bp-md) {
+            margin-top: 0;
+            margin-right: 1.2rem;
+
+            width: 4rem;
+            height: 4rem;
+        }
+
+        @media only screen and (max-width: $bp-sm) {
+            margin-right: 2rem;
+        }
     }
 
     &__text {
@@ -66,6 +162,10 @@
         color: $color-grey-dark;
 
         margin-top: 1.6rem;
+
+        @media only screen and (max-width: $bp-md) {
+            margin-top: 0;
+        }
     }
 }
 
@@ -74,6 +174,10 @@
     height: calc(100vh - 16rem);
     background-image: linear-gradient(to right bottom, $color-blue-primary, $color-blue-dark);
     overflow-y: scroll;
+
+    @media only screen and (max-width: $bp-md) {
+        height: calc(100vh - 8rem);
+    }
 }
 
 // Controls
@@ -86,12 +190,25 @@
     &__form {
         margin-right: auto;
     }
+
+    @media only screen and (max-width: $bp-mobile) {
+        flex-flow: column nowrap;
+
+        &__form { 
+            margin-right: 0;
+            margin-bottom: 1.4rem;
+        }
+    }
 }
 
 // Search form
 .search-form {
     width: 36rem;
     position: relative;
+
+    @media only screen and (max-width: $bp-mobile) {
+        width: 95%;
+    }
 
     &__input {
         width: 100%;
@@ -131,6 +248,11 @@
     display: flex;
     align-items: center;
 
+    @media only screen and (max-width: $bp-mobile) {
+        align-self: flex-end;
+        margin-right: 1rem;
+    }
+
     &__text {
         font-size: 2.4rem;
         color: #fff;
@@ -148,6 +270,11 @@
 
         cursor: pointer;
         transition: fill .2s ease;
+
+        @media only screen and (max-width: $bp-mobile) {
+            width: 4rem;
+            height: 4rem;
+        }
 
         &--done:hover {
             fill: $color-green;
@@ -177,14 +304,18 @@
 
         &::before {
             content: '';
-            width: 3.2rem;
-            height: 3.2rem;
+            width: 3.6rem;
+            height: 3.6rem;
 
             margin-right: 2.4rem;
 
             background-repeat: no-repeat;
             background-position: center;
             background-size: cover;
+
+            @media only screen and (max-width: $bp-mobile) {
+                margin-left: 1rem;
+            }
         }
 
         &--notes::before {
@@ -193,6 +324,10 @@
 
         &--tasks::before {
             background-image: url('../img/icon-tasks--white.svg');
+        }
+
+        &--reminders::before {
+            background-image: url('../img/icon-reminders--white.svg');
         }
     }
 }
@@ -203,11 +338,36 @@
 
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-between;
+
+    @media only screen and (max-width: $bp-mobile) {
+        justify-content: center;
+    }
 
     &__item {
         flex: 0 0 36rem;
         background-color: #fff;
+        margin-bottom: 2rem;
+
+        &:not(:nth-child(3n)) {
+            margin-right: 4.5rem;
+
+            @media only screen and (max-width: $bp-md) {
+                margin-right: 0;
+            }
+        }
+
+        @media only screen and (max-width: $bp-md) {
+            flex: 0 0 49%;
+
+            &:not(:nth-child(2n)) { margin-right: 2%; }
+        }
+
+        @media only screen and (max-width: $bp-mobile) {
+            flex: 0 0 95%;
+            margin-bottom: 2.5rem;
+
+            &:not(:nth-child(2n)) { margin-right: 0; }
+        }
     }
 }
 
@@ -248,17 +408,20 @@
         visibility: hidden;
         transition: opacity .2s ease;
 
-        width: 12rem;
-        height: 4rem;
-        background-color: #fff;
+        // width: 12rem;
+        // height: 4rem;
+        width: 4rem;
+        height: 12rem;
+        background-color: $color-blue-dark;
         box-shadow: 0 2rem 4rem rgba(#000, .1);
 
         position: absolute;
-        top: 0;
-        right: -16.5rem;
+        top: 100%;
+        left: 0;
         z-index: 10;
 
         display: flex;
+        flex-flow: column nowrap;
         align-items: center;
         justify-content: space-around;
         padding: 0 1.5rem;
@@ -268,13 +431,13 @@
 
             width: 2rem;
             height: 2rem;
-            background-color: #fff;
+            background-color: $color-blue-dark;
 
             position: absolute;
-            z-index: -1;
-            top: 50%;
-            left: -.4rem;
-            margin-top: -1rem;
+            z-index: -10;
+            top: -.6rem;
+            left: 50%;
+            margin-left: -1rem;
             transform: rotate(-45deg);
         }
 
@@ -282,7 +445,7 @@
             width: 2.4rem;
             height: 2.4rem;
 
-            fill: $color-grey-dark;
+            fill: #fff;
             cursor: pointer;
             transition: fill .2s ease;
 
@@ -315,5 +478,27 @@
         font-size: 1.6rem;
         color: #000;
         line-height: 1.5;
+    }
+}
+
+.item-reminder {
+    &__category {
+        display: inline-block;
+        margin-right: 1.2rem;
+    }
+
+    &__date {
+        display: inline-block;
+
+        font-size: 1.6rem;
+        font-weight: 700;
+
+        &--in {
+            color: $color-green;
+        }
+
+        &--off {
+            color: $color-red;
+        }
     }
 }
