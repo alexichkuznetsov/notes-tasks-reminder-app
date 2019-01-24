@@ -73,10 +73,13 @@ body {
       width: 100vw;
       height: 100vh;
       background-color: #F7F7F7;
+      transition: left 0.7s cubic-bezier(0.23, 1, 0.32, 1);
       flex-flow: column nowrap;
       justify-content: flex-start;
       align-items: flex-start;
-      padding: 6rem 2rem 6rem 8rem; } }
+      padding: 6rem 2rem 6rem 8rem; }
+      .nav-list--open {
+        left: 0; } }
   .nav-list__close-btn {
     display: none;
     position: absolute;
