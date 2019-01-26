@@ -230,6 +230,9 @@ body {
     .filter__icon:not(:last-child) {
       margin-right: .8rem; }
 
+.section--invisible {
+  display: none; }
+
 .section__title {
   font-size: 2rem;
   font-weight: 300;
@@ -286,7 +289,12 @@ body {
 .item {
   padding: 2.4rem 3.6rem;
   box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.15);
-  position: relative; }
+  position: relative;
+  height: 100%; }
+  .item--task-done {
+    background-image: linear-gradient(to bottom, #fff, #fff 95%, #6CBA78); }
+  .item--task-not-done {
+    background-image: linear-gradient(to bottom, #fff, #fff 95%, rgba(223, 78, 78, 0.8)); }
   .item__category {
     font-size: 2rem;
     font-weight: 400;
@@ -307,29 +315,29 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: opacity .2s ease;
-    width: 4rem;
-    height: 12rem;
+    width: 15rem;
+    height: 4rem;
     background-color: #283E51;
     box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.1);
     position: absolute;
-    top: 100%;
-    left: 0;
+    top: 0;
+    left: -15.5rem;
     z-index: 10;
     display: flex;
-    flex-flow: column nowrap;
     align-items: center;
     justify-content: space-around;
     padding: 0 1.5rem; }
+    .item__controls--note, .item__controls--reminder {
+      width: 9rem;
+      left: -9.5rem; }
     .item__controls::before {
       content: '';
       width: 2rem;
       height: 2rem;
       background-color: #283E51;
       position: absolute;
+      right: -.2rem;
       z-index: -10;
-      top: -.6rem;
-      left: 50%;
-      margin-left: -1rem;
       transform: rotate(-45deg); }
     .item__controls-icon {
       width: 2.4rem;
@@ -343,6 +351,8 @@ body {
         fill: #4B79A1; }
       .item__controls-icon--like:hover {
         fill: #DF4E4E; }
+      .item__controls-icon--remove:hover {
+        fill: #6E7173; }
   .item__body {
     font-weight: 400; }
   .item__title {
@@ -366,3 +376,163 @@ body {
     color: #6CBA78; }
   .item-reminder__date--off {
     color: #DF4E4E; }
+
+.modal {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center; }
+  .modal--open {
+    opacity: 1;
+    visibility: visible; }
+  .modal__window {
+    width: 72rem;
+    background-color: #fff;
+    border-radius: 5px;
+    position: relative;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-5rem);
+    transition: opacity .4s ease, transform .4s ease; }
+    @media only screen and (max-width: 60em) {
+      .modal__window {
+        width: 90%; } }
+    .modal__window--open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0); }
+  .modal__close-icon {
+    position: absolute;
+    top: 1.6rem;
+    right: 2.4rem;
+    width: 4rem;
+    height: 4rem;
+    cursor: pointer;
+    transition: fill .2s ease; }
+    .modal__close-icon:hover {
+      fill: #4B79A1; }
+
+.form {
+  padding: 3rem 12rem;
+  color: #000; }
+  @media only screen and (max-width: 41.25em) {
+    .form {
+      padding: 2rem 4rem; } }
+  .form__title {
+    font-size: 3rem;
+    font-weight: 300;
+    text-align: center; }
+  .form__group {
+    text-align: center; }
+    .form__group:first-of-type {
+      margin-top: 2.6rem; }
+    .form__group:not(:last-child) {
+      margin-bottom: 2rem; }
+    .form__group--radio {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center; }
+    .form__group--invisible {
+      display: none; }
+  .form__select, .form__input, .form__textarea, .form__date {
+    display: block;
+    width: 100%;
+    height: 6rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    font-family: inherit;
+    font-size: 1.8rem;
+    text-align-last: center;
+    transition: background-color .2s ease; }
+    .form__select:focus, .form__input:focus, .form__textarea:focus, .form__date:focus {
+      outline: none;
+      background-color: #e4e4e4; }
+  .form__invalid + .form__invalid-feedback {
+    display: block; }
+  .form__invalid-feedback {
+    display: none;
+    font-size: 1.4rem;
+    color: #DF4E4E;
+    margin-top: .4rem; }
+  .form__select {
+    -moz-appearance: none;
+    -webkit-appearance: none; }
+  .form__label {
+    font-size: 2rem;
+    font-weight: 400;
+    text-align: center;
+    display: block;
+    margin-bottom: 1.8rem; }
+  .form__input {
+    text-align-last: initial;
+    text-align: center; }
+  .form__textarea {
+    height: 12rem;
+    resize: none;
+    padding: 2.4rem 3rem;
+    text-align-last: initial;
+    text-align: left;
+    line-height: 1.4; }
+  .form__radio-box {
+    display: flex;
+    align-items: center; }
+  .form__radio-btn {
+    display: none; }
+  .form__radio-btn:checked + .form__radio-label::after {
+    opacity: 1; }
+  .form__radio-label {
+    display: flex;
+    align-items: center;
+    font-size: 1.8rem;
+    position: relative;
+    margin-right: 2.4rem;
+    cursor: pointer; }
+    .form__radio-label::before {
+      content: '';
+      width: 3.2rem;
+      height: 3.2rem;
+      border: 3px solid #4B79A1;
+      border-radius: 50%;
+      margin-right: .8rem; }
+    .form__radio-label::after {
+      content: '';
+      width: 1.6rem;
+      height: 1.6rem;
+      background-color: #4B79A1;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      margin-top: -.8rem;
+      margin-left: -.2rem;
+      opacity: 0;
+      transition: opacity .2s ease; }
+  .form__date {
+    text-align: center; }
+    .form__date:focus::placeholder {
+      color: transparent; }
+  .form__submit-btn {
+    display: inline-block;
+    padding: 1.2rem 6rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #4B79A1;
+    font-family: inherit;
+    font-size: 2rem;
+    color: #fff;
+    transition: background-color .2s ease;
+    cursor: pointer; }
+    .form__submit-btn:hover {
+      background-color: #436c90; }
+    .form__submit-btn[disabled] {
+      background-color: #283E51;
+      cursor: not-allowed; }

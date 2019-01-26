@@ -19,7 +19,7 @@
         </button>
         <ul class="nav-list u-container" id="nav-list">
             <li class="nav-list__item">
-                <button class="nav-list__btn">
+                <button class="nav-list__btn" id="new-note">
                     <svg class="nav-list__icon">
                         <use xlink:href="assets/img/icon-notes.svg#icon"></use>
                     </svg>
@@ -27,7 +27,7 @@
                 </button>
             </li>
             <li class="nav-list__item">
-                <button class="nav-list__btn">
+                <button class="nav-list__btn" id="new-task">
                     <svg class="nav-list__icon">
                         <use xlink:href="assets/img/icon-tasks.svg#icon"></use>
                     </svg>
@@ -35,7 +35,7 @@
                 </button>
             </li>
             <li class="nav-list__item">
-                <button class="nav-list__btn">
+                <button class="nav-list__btn" id="new-reminder">
                     <svg class="nav-list__icon">
                         <use xlink:href="assets/img/icon-reminders.svg#icon"></use>
                     </svg>
@@ -87,12 +87,12 @@
             </div>
 
             <!-- Notes list -->
-            <section class="section u-mt-sm u-mb-md">
+            <section class="section u-mt-sm u-mb-md" id="section-notes">
                 <h2 class="section__title section__title--notes">
                     All notes
                 </h2>
-                <ul class="items-list">
-                    <li class="items-list__item">
+                <ul class="items-list" id="notes-list">
+                    <!-- <li class="items-list__item">
                         <div class="item">
                             <h3 class="item__category">note</h3>
 
@@ -112,6 +112,10 @@
                                     
                                     <svg class="item__controls-icon item__controls-icon--like">
                                         <use xlink:href="assets/img/icon-heart.svg#icon"></use>
+                                    </svg>
+
+                                    <svg class="item__controls-icon item__controls-icon--remove">
+                                        <use xlink:href="assets/img/icon-trash.svg#icon"></use>
                                     </svg>
                                 </div>
                             </div>
@@ -354,18 +358,18 @@
                                 </p>
                             </div>
                         </div>
-                    </li>
+                    </li> -->
                 </ul>
             </section>
 
             <!-- Tasks list -->
-            <section class="section u-mb-md">
+            <section class="section u-mb-md" id="section-tasks">
                 <h2 class="section__title section__title--tasks">
                     All tasks
                 </h2>
 
-                <ul class="items-list">
-                    <li class="items-list__item">
+                <ul class="items-list" id="tasks-list">
+                    <!-- <li class="items-list__item">
                         <div class="item">
                             <h3 class="item__category">task</h3>
 
@@ -462,18 +466,18 @@
                                 </p>
                             </div>
                         </div>
-                    </li>
+                    </li> -->
                 </ul>
             </section>
 
             <!-- Reminders list -->
-            <section class="section">
+            <section class="section" id="section-reminders">
                 <h2 class="section__title section__title--reminders">
                     All reminders
                 </h2>
 
-                <ul class="items-list">
-                    <li class="items-list__item">
+                <ul class="items-list" id="reminders-list">
+                    <!-- <li class="items-list__item">
                         <div class="item item-reminder">
                             <h3 class="item__category item-reminder__category">reminder</h3>
                             <p class="item-reminder__date item-reminder__date--in">26/01/19</p>
@@ -573,11 +577,64 @@
                                 </p>
                             </div>
                         </div>
-                    </li>
+                    </li> -->
                 </ul>
             </section>
         </div>
     </main>
+
+    <!-- Modal window -->
+    <div class="modal" id="modal">
+        <div class="modal__window" id="modal-window">
+            <svg class="modal__close-icon" id="modal-close">
+                <use xlink:href="assets/img/icon-close.svg#icon"></use>
+            </svg>
+
+            <form class="modal__form form" id="add-form">
+                <h2 class="form__title">Your plans?</h2>
+
+                <div class="form__group">
+                    <select name="type" id="select-type" class="form__select" disabled>
+                        <option value="note" id="option-note">New note</option>
+                        <option value="task" id="option-task">New task</option>
+                        <option value="reminder" id="option-reminder">New reminder</option>
+                    </select>
+                </div>
+
+                <div class="form__group">
+                    <label for="input-title" class="form__label">Come up with a name</label>
+                    <input type="text" name="title" id="input-title" class="form__input">
+                    <p class="form__invalid-feedback">You have to provide a name</p>
+                </div>
+
+                <div class="form__group">
+                    <label for="input-body" class="form__label">Give a brief description</label>
+                    <textarea class="form__textarea" id="input-body"></textarea>
+                    <p class="form__invalid-feedback">You have to specify a description</p>
+                </div>
+
+                <div class="form__group form__group--radio" id="group-done">
+                    <h3 class="form__label">Is it done already?</h3>
+                    <div class="form__radio-box">
+                        <input type="radio" value="done" name="is-done" id="radio-done" class="form__radio-btn form__radio-btn--done">
+                        <label for="radio-done" class="form__radio-label">Yes</label>
+                        <input type="radio" value="not-done" name="is-done" id="radio-not-done" class="form__radio-btn form__radio-btn--not-done" checked>
+                        <label for="radio-not-done" class="form__radio-label">No</label>
+                    </div>
+                </div>
+
+                <div class="form__group" id="group-date">
+                    <label for="input-date" class="form__label">Choose a date</label>
+                    <input type="text" id="input-date" class="form__date" placeholder="Month / Day / Year">
+                    <p class="form__invalid-feedback">Reminder needs a date</p>
+                </div>
+
+                <div class="form__group">
+                    <input type="submit" value="Create" class="form__submit-btn" id="create-btn">
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Don't forget to build this file with Gulp -->
     <script src="src/js/app.js"></script>
