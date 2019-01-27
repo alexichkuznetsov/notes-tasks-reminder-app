@@ -1,3 +1,8 @@
+// TODO:
+// 1. Поиск и добавить список, куда будут выводиться результаты поиска
+// 2. Фильтрация done / not-done (возможно ее стоит перенести в task list)
+// 3. Мелочи
+
 // Controller that handles all
 // operations that are connected
 // with user interface
@@ -36,6 +41,9 @@ const UIController = (function() {
         inputBody: 'input-body',
         inputDone: '.form__radio-btn:checked',
         inputDate: 'input-date',
+        radioDone: '.form__radio-btn--done',
+        radioNotDone: '.form__radio-btn--not-done',
+        inputHidden: '.form__input--hidden',
 
         // Input groups
         groupDone: 'group-done',
@@ -46,6 +54,10 @@ const UIController = (function() {
         sectionTasks: 'section-tasks',
         sectionReminders: 'section-reminders'
     };
+
+    function getElementByDataId(id) {
+        return document.querySelector(`.items-list__item[data-id="${ id }"]`);
+    }
 
     return {
         getSelectors: function() {
@@ -63,11 +75,47 @@ const UIController = (function() {
         openModal: function() {
             document.getElementById(selectors.modal).classList.add('modal--open');
             document.getElementById(selectors.modalWindow).classList.add('modal__window--open');
+            document.getElementById(selectors.createBtn).value = 'Create';
         },
 
         closeModal: function() {
             document.getElementById(selectors.modal).classList.remove('modal--open');
             document.getElementById(selectors.modalWindow).classList.remove('modal__window--open');
+        },
+
+        resetForm: function() {
+            this.clearInputs();
+
+            document.getElementById(selectors.inputTitle).classList.remove('form__invalid');
+            document.getElementById(selectors.inputBody).classList.remove('form__invalid');
+            document.getElementById(selectors.inputDate).classList.remove('form__invalid');
+        },
+
+        fillForm: function(item) {
+            document.getElementById(selectors.createBtn).value = 'Edit';
+            document.getElementById(selectors.inputTitle).value = item.title;
+            document.getElementById(selectors.inputBody).value = item.body;
+            document.querySelector(selectors.inputHidden).value = item.id;
+            
+            switch (item.type) {
+                case 'task':
+                    if (item.done) {
+                        document.querySelector(selectors.radioDone).setAttribute('selected', true);
+                        document.querySelector(selectors.radioNotDone).setAttribute('selected', false);
+                    } else {
+                        document.querySelector(selectors.radioDone).setAttribute('selected', false);
+                        document.querySelector(selectors.radioNotDone).setAttribute('selected', true);
+                    }
+
+                    break;
+                case 'reminder':
+                    let outputDate = `${ item.expires.getMonth() + 1 }/${ item.expires.getDate() }/${ item.expires.getFullYear() }`;
+                    document.getElementById(selectors.inputDate).value = outputDate;
+                    console.log(outputDate);
+                    break;
+                default:
+                    break;
+            }
         },
 
         setOptionSelected: function(selector) {
@@ -106,10 +154,24 @@ const UIController = (function() {
             document.getElementById(selectors.inputDate).value = '';
         },
 
-        validateTitle: function() {
-            const el = document.getElementById(selectors.inputTitle);
+        validateInput: function(type) {
+            let el, res;
+
+            switch (type) {
+                case 'title':
+                    el = document.getElementById(selectors.inputTitle);
+                    break;
+                case 'body':
+                    el = document.getElementById(selectors.inputBody);
+                    break;
+                case 'date':
+                    el = document.getElementById(selectors.inputDate);
+                    break;
+                default:
+                    break;
+            }
+
             const val = el.value;
-            let res;
 
             if (!val.length) {
                 el.classList.add('form__invalid');
@@ -120,44 +182,19 @@ const UIController = (function() {
             }
 
             return res;
-        },
-
-        validateBody: function() {
-            const el = document.getElementById(selectors.inputBody);
-            const val = el.value;
-            let res;
-
-            if (!val.length) {
-                el.classList.add('form__invalid');
-                res = false;
-            } else {
-                el.classList.remove('form__invalid');
-                res = true;
-            }
-
-            return res;
-        },
-
-        validateDate: function() {
-            const el = document.getElementById(selectors.inputDate);
-            
-            // TODO:
-            // Сделать валидацию даты mm/dd/yyyy и/или mm/dd/yy
-        },
-
-        validateAll: function() {
-
         },
 
         appendToList: function(item) {
             let list, listItem;
 
+            listItem = document.createElement('li');
+            listItem.className = 'items-list__item';
+            listItem.dataset.id = item.id;
+
             if (item.type === 'note') {
                 list = document.getElementById(selectors.notesList);
 
-                listItem = document.createElement('li');
-                listItem.className = 'items-list__item';
-
+                listItem.dataset.type = 'note';
                 listItem.innerHTML = `
                     <div class="item">
                         <h3 class="item__category">note</h3>
@@ -168,8 +205,8 @@ const UIController = (function() {
                             </svg>
 
                             <div class="item__controls item__controls--note">
-                                <svg class="item__controls-icon item__controls-icon--like">
-                                    <use xlink:href="assets/img/icon-heart.svg#icon"></use>
+                                <svg class="item__controls-icon item__controls-icon--edit">
+                                    <use xlink:href="assets/img/icon-edit.svg#icon"></use>
                                 </svg>
 
                                 <svg class="item__controls-icon item__controls-icon--remove">
@@ -191,9 +228,7 @@ const UIController = (function() {
             } else if (item.type === 'task') {
                 list = document.getElementById(selectors.tasksList);
 
-                listItem = document.createElement('li');
-                listItem.className = 'items-list__item';
-
+                listItem.dataset.type = 'task';
                 listItem.innerHTML = `
                     <div class="item ${ item.done ? 'item--task-done' : 'item--task-not-done' }">
                         <h3 class="item__category">task</h3>
@@ -212,8 +247,8 @@ const UIController = (function() {
                                     <use xlink:href="assets/img/icon-not-done.svg#icon"></use>
                                 </svg>
                         
-                                <svg class="item__controls-icon item__controls-icon--like">
-                                    <use xlink:href="assets/img/icon-heart.svg#icon"></use>
+                                <svg class="item__controls-icon item__controls-icon--edit">
+                                    <use xlink:href="assets/img/icon-edit.svg#icon"></use>
                                 </svg>
 
                                 <svg class="item__controls-icon item__controls-icon--remove">
@@ -234,13 +269,12 @@ const UIController = (function() {
                 `;
             } else if (item.type === 'reminder') {
                 list = document.getElementById(selectors.remindersList);
+                listItem.dataset.type = 'reminder';
+
                 let displayDate = `${ item.expires.getMonth() + 1 } / ${ item.expires.getDate() } / ${ item.expires.getFullYear() }`;
 
                 const itemDate = item.expires.getTime();
                 const currentDate = new Date().getTime();
-
-                listItem = document.createElement('li');
-                listItem.className = 'items-list__item';
 
                 listItem.innerHTML = `
                     <div class="item item-reminder">
@@ -253,8 +287,8 @@ const UIController = (function() {
                             </svg>
 
                             <div class="item__controls item__controls--reminder">
-                                <svg class="item__controls-icon item__controls-icon--like">
-                                    <use xlink:href="assets/img/icon-heart.svg#icon"></use>
+                                <svg class="item__controls-icon item__controls-icon--edit">
+                                    <use xlink:href="assets/img/icon-edit.svg#icon"></use>
                                 </svg>
 
                                 <svg class="item__controls-icon item__controls-icon--remove">
@@ -272,13 +306,51 @@ const UIController = (function() {
             }
 
             list.appendChild(listItem);
+        },
+
+        updateItem: function(item) {
+            const el = getElementByDataId(item.id);
+
+            el.querySelector('.item__title').textContent = item.title;
+            el.querySelector('.item__text').textContent = item.body;
+
+            if (item.type === 'task') {
+                const innerEl = el.querySelector('.item');
+                innerEl.classList.remove('item--task-done');
+                innerEl.classList.remove('item--task-not-done');
+
+                if (item.done) {
+                    innerEl.classList.add('item--task-done');
+                } else {
+                    innerEl.classList.add('item--task-not-done');
+                }
+            } else if (item.type === 'reminder') {
+                let displayDate = `${ item.expires.getMonth() + 1 } / ${ item.expires.getDate() } / ${ item.expires.getFullYear() }`;
+                const date = el.querySelector('.item-reminder__date');
+
+                date.classList.remove('item-reminder__date--in');
+                date.classList.remove('item-reminder__date--off');
+                date.textContent = displayDate;
+
+                const currentDate = new Date().getTime();
+
+                if (item.expires.getTime() > currentDate) {
+                    date.classList.add('item-reminder__date--in');
+                } else {
+                    date.classList.add('item-reminder__date--off');
+                }
+            }
+        },
+
+        removeEl: function(el) {
+            el.remove();
         }
     }
 })();
 
 const ItemsController = (function() {
     // All currents items
-    const items = {
+    let items = {
         notes: [],
         tasks: [],
         reminders: []
@@ -340,6 +412,41 @@ const ItemsController = (function() {
             console.log(items);
 
             return item;
+        },
+
+        updateItem: function(type, id, data) {
+            let item = items[type].find(function(el) {
+                return el.id === id;
+            });
+
+            item.title = data.title;
+            item.body = data.body;
+
+            if (item.type === 'task') {
+                item.done = data.isDone;
+            } else if (item.type === 'reminder') {
+                item.expires = new Date(data.expires);
+            }
+
+            return item;
+        },
+
+        deleteItem: function(type, id) {
+            let arr = items[type];
+
+            items[type] = arr.filter(function(item) {
+                return item.id !== id;
+            });
+
+            console.log(items);
+        },
+
+        getItem: function(type, id) {
+            const idx = items[type].findIndex(function(item) {
+                return item.id === id;
+            });
+
+            return items[type][idx];
         }
     }
 })();
@@ -352,7 +459,8 @@ const App = (function(UI, IC) {
             title: false,
             body: false,
             date: false
-        }
+        },
+        formState: 'create'
     };
     
     function loadEventListeners() {
@@ -373,6 +481,7 @@ const App = (function(UI, IC) {
                     UI.setGroupVisibility(selectors.groupDone, 'invisible');
                     UI.setOptionSelected(selectors.optionNote);
                     UI.openModal();
+                    setFormState('create');
                 });
         document.getElementById(selectors.newTask)
                 .addEventListener('click', function() {
@@ -381,6 +490,7 @@ const App = (function(UI, IC) {
                     UI.setGroupVisibility(selectors.groupDate, 'invisible');
                     UI.setOptionSelected(selectors.optionTask);
                     UI.openModal();
+                    setFormState('create');
                 });
         document.getElementById(selectors.newReminder)
                 .addEventListener('click', function() {
@@ -389,72 +499,203 @@ const App = (function(UI, IC) {
                     UI.setGroupVisibility(selectors.groupDate, 'visible');
                     UI.setOptionSelected(selectors.optionReminder);
                     UI.openModal();
+                    setFormState('create');
                 });
         // Event listener for closing modal
         document.getElementById(selectors.modalClose)
-                .addEventListener('click', UI.closeModal);
+                .addEventListener('click', function() {
+                    UI.closeModal();
+                    UI.resetForm();
+                    setFormState('create');
+                });
         
         // Event listeners for input validation
         document.getElementById(selectors.inputTitle)
                 .addEventListener('blur', function() {
-                    const state = UI.validateTitle();
-                    setFormState('title', state);
+                    const state = UI.validateInput('title');
+                    setFormValidationState('title', state);
                 });
         document.getElementById(selectors.inputBody)
                 .addEventListener('blur', function() {
-                    const state = UI.validateBody();
-                    setFormState('body', state);
+                    const state = UI.validateInput('body');
+                    setFormValidationState('body', state);
+                });
+        document.getElementById(selectors.inputDate)
+                .addEventListener('blur', function() {
+                    const state = UI.validateInput('date');
+                    setFormValidationState('date', state);
                 });
         
         // Event listener for creating new item
         document.getElementById(selectors.form)
                 .addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const type = document.getElementById(selectors.selectType).value,
-                          title = document.getElementById(selectors.inputTitle).value,
-                          body = document.getElementById(selectors.inputBody).value;
-                    
-                    if (type === 'note' && (!state.formValid.title || !state.formValid.body)) return;
-                    if (type === 'reminder' && (!state.formValid.title || !state.formValid.body || !state.formValid.date)) return;
-                    
-                    const data = {
-                        title: title,
-                        body: body
+
+                    if (state.formState === 'create') {
+                        create(e);
+                    } else if (state.formState === 'edit') {
+                        update(e);
                     }
+                });
 
-                    let item;
-
-                    if (type === 'note') {
-                        item = IC.createItem('note', data);
-                    } else if (type === 'task') {
-                        const isDone = document.querySelector(selectors.inputDone).value;
-                        data.isDone = isDone === 'done' ? true : false;
-
-                        item = IC.createItem('task', data);
-                    } else if (type === 'reminder') {
-                        const expires = document.getElementById(selectors.inputDate).value;
-                        data.expires = expires;
-
-                        item = IC.createItem('reminder', data);
-                    }
-
-                    UI.closeModal();
-                    UI.clearInputs();
-                    UI.appendToList(item);
-
-                    resetFormState();
+        // Event delegation for item controls
+        document.getElementById(selectors.notesList)
+                .addEventListener('click', function(e) {
+                    controlsHandler(e, 'notes');
+                });
+        document.getElementById(selectors.tasksList)
+                .addEventListener('click', function(e) {
+                    controlsHandler(e, 'tasks');
+                });
+        document.getElementById(selectors.remindersList)
+                .addEventListener('click', function(e) {
+                    controlsHandler(e, 'reminders');
                 });
     }
 
-    function setFormState(subject, newState) {
+    function create(e) {
+        const selectors = UI.getSelectors();
+
+        const type = document.getElementById(selectors.selectType).value,
+              title = document.getElementById(selectors.inputTitle).value,
+              body = document.getElementById(selectors.inputBody).value;
+
+        validateAll();
+        
+        if ((type === 'note' || type === 'task') && (!state.formValid.title || !state.formValid.body)) return;
+        if (type === 'reminder' && (!state.formValid.title || !state.formValid.body || !state.formValid.date)) return;
+        
+        const data = {
+            title: title,
+            body: body
+        }
+
+        let item;
+
+        if (type === 'note') {
+            item = IC.createItem('note', data);
+        } else if (type === 'task') {
+            const isDone = document.querySelector(selectors.inputDone).value;
+            data.isDone = isDone === 'done' ? true : false;
+
+            item = IC.createItem('task', data);
+        } else if (type === 'reminder') {
+            const expires = document.getElementById(selectors.inputDate).value;
+            data.expires = expires;
+
+            item = IC.createItem('reminder', data);
+        }
+
+        UI.closeModal();
+        UI.clearInputs();
+        UI.appendToList(item);
+
+        resetFormValidationState();
+    }
+
+    function update(e) {
+        const selectors = UI.getSelectors();
+
+        const type = document.getElementById(selectors.selectType).value,
+              title = document.getElementById(selectors.inputTitle).value,
+              body = document.getElementById(selectors.inputBody).value,
+              id = parseInt(document.querySelector(selectors.inputHidden).value, 10);
+
+        validateAll();
+        
+        if ((type === 'note' || type === 'task') && (!state.formValid.title || !state.formValid.body)) return;
+        if (type === 'reminder' && (!state.formValid.title || !state.formValid.body || !state.formValid.date)) return;
+        
+        const data = {
+            title: title,
+            body: body
+        }
+
+        let item;
+
+        if (type === 'note') {
+            item = IC.updateItem('notes', id, data);
+        } else if (type === 'task') {
+            const isDone = document.querySelector(selectors.inputDone).value;
+            data.isDone = isDone === 'done' ? true : false;
+
+            item = IC.updateItem('tasks', id, data);
+        } else if (type === 'reminder') {
+            const expires = document.getElementById(selectors.inputDate).value;
+            data.expires = expires;
+
+            item = IC.updateItem('reminders', id, data);
+        }
+
+        UI.closeModal();
+        UI.clearInputs();
+        UI.updateItem(item);
+
+        resetFormValidationState();
+    }
+
+    function validateAll() {
+        const title = UI.validateInput('title'),
+              body = UI.validateInput('body'),
+              date = UI.validateInput('date');
+
+        setFormValidationState('title', title);
+        setFormValidationState('body', body);
+        setFormValidationState('date', date);
+    }
+
+    function setFormValidationState(subject, newState) {
         state.formValid[subject] = newState;
     }
 
-    function resetFormState() {
+    function setFormState(s) {
+        state.formState = s;
+    }
+
+    function resetFormValidationState() {
         state.formValid = {
             title: false,
             body: false,
             date: false
+        }
+    }
+
+    function controlsHandler(e, type) {
+        const el = e.target.closest('.item__controls-icon');
+        const parent = e.target.closest('.items-list__item');
+        const selectors = UI.getSelectors();
+
+        if (el) {
+            const actionType = el.classList[1];
+            const id = parseInt(parent.dataset.id, 10);
+
+            switch (actionType) {
+                case 'item__controls-icon--remove':
+                    IC.deleteItem(type, id);
+                    UI.removeEl(parent);
+
+                    break;
+                case 'item__controls-icon--edit':
+                    const item = IC.getItem(type, id);
+
+                    if (item.type === 'note') {
+                        UI.setGroupVisibility(selectors.groupDate, 'invisible');
+                        UI.setGroupVisibility(selectors.groupDone, 'invisible');
+                    } else if (item.type === 'task') {
+                        UI.setGroupVisibility(selectors.groupDone, 'visible');
+                        UI.setGroupVisibility(selectors.groupDate, 'invisible');
+                    } else if (item.type === 'reminder') {
+                        UI.setGroupVisibility(selectors.groupDone, 'invisible');
+                        UI.setGroupVisibility(selectors.groupDate, 'visible');
+                    }
+
+                    setFormState('edit');
+                    UI.openModal();
+                    UI.fillForm(item);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

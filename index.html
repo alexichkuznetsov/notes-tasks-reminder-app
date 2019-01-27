@@ -42,14 +42,6 @@
                     <p class="nav-list__text">New Reminder</p>
                 </button>
             </li>
-            <li class="nav-list__item">
-                <button class="nav-list__btn">
-                    <svg class="nav-list__icon">
-                        <use xlink:href="assets/img/icon-favorites.svg#icon"></use>
-                    </svg>
-                    <p class="nav-list__text">Favorites</p>
-                </button>
-            </li>
             <li class="nav-list__close-btn" id="nav-close">
                 <svg class="nav-list__close-icon">
                     <use xlink:href="assets/img/icon-close.svg#icon"></use>
@@ -592,6 +584,8 @@
 
             <form class="modal__form form" id="add-form">
                 <h2 class="form__title">Your plans?</h2>
+
+                <input type="hidden" class="form__input--hidden" value="">
 
                 <div class="form__group">
                     <select name="type" id="select-type" class="form__select" disabled>

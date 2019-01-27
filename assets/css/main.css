@@ -349,8 +349,8 @@ body {
         fill: #6CBA78; }
       .item__controls-icon--not-done:hover {
         fill: #4B79A1; }
-      .item__controls-icon--like:hover {
-        fill: #DF4E4E; }
+      .item__controls-icon--edit:hover {
+        fill: #f39d12; }
       .item__controls-icon--remove:hover {
         fill: #6E7173; }
   .item__body {
