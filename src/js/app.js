@@ -6,6 +6,29 @@
 // operations with local storage
 const StorageController = (function() {
     return {
+        get: function() {
+            let items = localStorage.getItem('items');
+
+            if (items) {
+                items = JSON.parse(items);
+            } else {
+                items = {
+                    notes: [],
+                    tasks: [],
+                    reminders: []
+                }
+            }
+
+            return items;
+        },
+
+        store: function(data) {
+            data = JSON.stringify(data);
+
+            localStorage.setItem('items', data);
+
+            console.log('Saved to LS');
+        }
     }
 })();
 
@@ -117,9 +140,8 @@ const UIController = (function() {
 
                     break;
                 case 'reminder':
-                    let outputDate = `${ item.expires.getMonth() + 1 }/${ item.expires.getDate() }/${ item.expires.getFullYear() }`;
-                    document.getElementById(selectors.inputDate).value = outputDate;
-                    console.log(outputDate);
+                    // let outputDate = `${ item.expires.getMonth() + 1 }/${ item.expires.getDate() }/${ item.expires.getFullYear() }`;
+                    document.getElementById(selectors.inputDate).value = item.expires;
                     break;
                 default:
                     break;
@@ -283,15 +305,17 @@ const UIController = (function() {
                 list = list || document.getElementById(selectors.remindersList);
                 listItem.dataset.type = 'reminder';
 
-                let displayDate = `${ item.expires.getMonth() + 1 } / ${ item.expires.getDate() } / ${ item.expires.getFullYear() }`;
+                // let displayDate = `${ item.expires.getMonth() + 1 } / ${ item.expires.getDate() } / ${ item.expires.getFullYear() }`;
 
-                const itemDate = item.expires.getTime();
+
+                // const itemDate = item.expires.getTime();
+                const itemDate = new Date(item.expires).getTime();
                 const currentDate = new Date().getTime();
 
                 listItem.innerHTML = `
                     <div class="item item-reminder">
                         <h3 class="item__category item-reminder__category">reminder</h3>
-                        <p class="item-reminder__date ${ itemDate > currentDate ? 'item-reminder__date--in' : 'item-reminder__date--off' }">${ displayDate }</p>
+                        <p class="item-reminder__date ${ itemDate > currentDate ? 'item-reminder__date--in' : 'item-reminder__date--off' }">${ item.expires }</p>
 
                         <div class="item__icon-box">
                             <svg class="item__icon">
@@ -337,16 +361,17 @@ const UIController = (function() {
                     innerEl.classList.add('item--task-not-done');
                 }
             } else if (item.type === 'reminder') {
-                let displayDate = `${ item.expires.getMonth() + 1 } / ${ item.expires.getDate() } / ${ item.expires.getFullYear() }`;
+                let displayDate = item.expires;
                 const date = el.querySelector('.item-reminder__date');
 
                 date.classList.remove('item-reminder__date--in');
                 date.classList.remove('item-reminder__date--off');
                 date.textContent = displayDate;
 
+                const itemDate = new Date(item.expires).getTime();
                 const currentDate = new Date().getTime();
 
-                if (item.expires.getTime() > currentDate) {
+                if (itemDate > currentDate) {
                     date.classList.add('item-reminder__date--in');
                 } else {
                     date.classList.add('item-reminder__date--off');
@@ -490,7 +515,7 @@ const ItemsController = (function() {
         this.id = id;
         this.title = title;
         this.body = body;
-        this.expires = new Date(expires);
+        this.expires = expires;
     }
 
     function uniqueID(min, max) {
@@ -536,7 +561,7 @@ const ItemsController = (function() {
             if (item.type === 'task') {
                 item.done = data.isDone;
             } else if (item.type === 'reminder') {
-                item.expires = new Date(data.expires);
+                item.expires = data.expires;
             }
 
             return item;
@@ -567,12 +592,16 @@ const ItemsController = (function() {
             return data.filter(function(item) {
                 return item.title.toLowerCase().indexOf(text) !== -1;
             })
+        },
+
+        setItems: function(data) {
+            items = data;
         }
     }
 })();
 
 // Main app controller
-const App = (function(UI, IC) {
+const App = (function(UI, IC, LS) {
 
     const state = {
         formValid: {
@@ -585,6 +614,24 @@ const App = (function(UI, IC) {
     
     function loadEventListeners() {
         const selectors = UI.getSelectors();
+
+        // Event listener for getting items from LS
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get items from LS
+            const items = LS.get();
+
+            // Set items to items controller
+            IC.setItems(items);
+
+            // Check if there are any items
+            if (items.notes.length || items.tasks.length || items.reminders.length) {
+                for (let key in items) {
+                    items[key].forEach(function(item) {
+                        UI.appendToList(null, item);
+                    });
+                }
+            }
+        });
 
         // Event listener for opening sidenav
         document.getElementById(selectors.navOpen)
@@ -656,6 +703,9 @@ const App = (function(UI, IC) {
                     } else if (state.formState === 'edit') {
                         update(e);
                     }
+
+                    const items = IC.getData();
+                    LS.store(items);
                 });
 
         // Event delegation for item controls
@@ -833,6 +883,9 @@ const App = (function(UI, IC) {
                     IC.deleteItem(type, id);
                     UI.removeEl(parent);
 
+                    const items = IC.getData();
+                    LS.store(items);
+
                     break;
                 case 'item__controls-icon--edit':
                     item = IC.getItem(type, id);
@@ -840,12 +893,15 @@ const App = (function(UI, IC) {
                     if (item.type === 'note') {
                         UI.setGroupVisibility(selectors.groupDate, 'invisible');
                         UI.setGroupVisibility(selectors.groupDone, 'invisible');
+                        UI.setOptionSelected(selectors.optionNote);
                     } else if (item.type === 'task') {
                         UI.setGroupVisibility(selectors.groupDone, 'visible');
                         UI.setGroupVisibility(selectors.groupDate, 'invisible');
+                        UI.setOptionSelected(selectors.optionTask);
                     } else if (item.type === 'reminder') {
                         UI.setGroupVisibility(selectors.groupDone, 'invisible');
                         UI.setGroupVisibility(selectors.groupDate, 'visible');
+                        UI.setOptionSelected(selectors.optionReminder);
                     }
 
                     setFormState('edit');
@@ -867,6 +923,9 @@ const App = (function(UI, IC) {
                 default:
                     break;
             }
+
+            const items = IC.getData();
+            LS.store(items);
         }
     }
 
@@ -877,7 +936,7 @@ const App = (function(UI, IC) {
             loadEventListeners();
         }
     }
-})(UIController, ItemsController);
+})(UIController, ItemsController, StorageController);
 
 
 // Init our app
