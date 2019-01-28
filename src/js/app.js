@@ -1,11 +1,16 @@
 // TODO:
-// 1. Поиск и добавить список, куда будут выводиться результаты поиска
-// 2. Фильтрация done / not-done (возможно ее стоит перенести в task list)
-// 3. Мелочи
+// 2. Local storage
+// 
 
 // Controller that handles all
-// operations that are connected
-// with user interface
+// operations with local storage
+const StorageController = (function() {
+    return {
+    }
+})();
+
+// Controller that handles all
+// operations with user interface
 const UIController = (function() {
     const selectors = {
         // Buttons
@@ -15,12 +20,14 @@ const UIController = (function() {
         newTask: 'new-task',
         newReminder: 'new-reminder',
         createBtn: 'create-btn',
+        filterBox: '.filter__icon-box',
 
         // UI
         navList: 'nav-list',
         notesList: 'notes-list',
         tasksList: 'tasks-list',
         remindersList: 'reminders-list',
+        searchList: 'search-list',
 
         // Modal
         modal: 'modal',
@@ -44,6 +51,7 @@ const UIController = (function() {
         radioDone: '.form__radio-btn--done',
         radioNotDone: '.form__radio-btn--not-done',
         inputHidden: '.form__input--hidden',
+        searchInput: 'search-input',
 
         // Input groups
         groupDone: 'group-done',
@@ -184,15 +192,19 @@ const UIController = (function() {
             return res;
         },
 
-        appendToList: function(item) {
+        appendToList: function(listType, item) {
             let list, listItem;
+
+            if (listType === 'search') {
+                list = document.getElementById(selectors.searchList);
+            }
 
             listItem = document.createElement('li');
             listItem.className = 'items-list__item';
             listItem.dataset.id = item.id;
 
             if (item.type === 'note') {
-                list = document.getElementById(selectors.notesList);
+                list = list || document.getElementById(selectors.notesList);
 
                 listItem.dataset.type = 'note';
                 listItem.innerHTML = `
@@ -226,7 +238,7 @@ const UIController = (function() {
                     </div>
                 `;
             } else if (item.type === 'task') {
-                list = document.getElementById(selectors.tasksList);
+                list = list || document.getElementById(selectors.tasksList);
 
                 listItem.dataset.type = 'task';
                 listItem.innerHTML = `
@@ -268,7 +280,7 @@ const UIController = (function() {
                     </div>
                 `;
             } else if (item.type === 'reminder') {
-                list = document.getElementById(selectors.remindersList);
+                list = list || document.getElementById(selectors.remindersList);
                 listItem.dataset.type = 'reminder';
 
                 let displayDate = `${ item.expires.getMonth() + 1 } / ${ item.expires.getDate() } / ${ item.expires.getFullYear() }`;
@@ -342,8 +354,107 @@ const UIController = (function() {
             }
         },
 
+        filterTasks: function(filterType, tasks) {
+            if (filterType === 'done') {
+                document.querySelector('.filter__icon--not-done').classList.remove('filter__icon--not-done-active');
+                document.querySelector('.filter__icon--done').classList.add('filter__icon--done-active');
+            } else if (filterType === 'not-done') {
+                document.querySelector('.filter__icon--done').classList.remove('filter__icon--done-active');
+                document.querySelector('.filter__icon--not-done').classList.add('filter__icon--not-done-active');
+            } else if (filterType === 'refresh') {
+                document.querySelector('.filter__icon--done').classList.remove('filter__icon--done-active');
+                document.querySelector('.filter__icon--not-done').classList.remove('filter__icon--not-done-active');
+            }
+
+            const list = document.getElementById(selectors.tasksList);
+            list.innerHTML = '';
+
+            tasks.forEach(function(item) {
+                const listItem = document.createElement('li');
+                listItem.className = 'items-list__item';
+                listItem.dataset.id = item.id;
+                listItem.dataset.type = 'task';
+
+                let output = `
+                    <div class="item ${ item.done ? 'item--task-done' : 'item--task-not-done' }">
+                        <h3 class="item__category">task</h3>
+
+                        <div class="item__icon-box">
+                            <svg class="item__icon">
+                                <use xlink:href="assets/img/icon-more.svg#icon"></use>
+                            </svg>
+
+                            <div class="item__controls">
+                                <svg class="item__controls-icon item__controls-icon--done">
+                                    <use xlink:href="assets/img/icon-done.svg#icon"></use>
+                                </svg>
+
+                                <svg class="item__controls-icon item__controls-icon--not-done">
+                                    <use xlink:href="assets/img/icon-not-done.svg#icon"></use>
+                                </svg>
+                        
+                                <svg class="item__controls-icon item__controls-icon--edit">
+                                    <use xlink:href="assets/img/icon-edit.svg#icon"></use>
+                                </svg>
+
+                                <svg class="item__controls-icon item__controls-icon--remove">
+                                    <use xlink:href="assets/img/icon-trash.svg#icon"></use>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="item__body">
+                            <h4 class="item__title">
+                                ${ item.title }
+                            </h4>
+                            <p class="item__text">
+                                ${ item.body }
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                listItem.innerHTML = output;
+                list.appendChild(listItem);
+            });
+        },
+
         removeEl: function(el) {
             el.remove();
+        },
+
+        hideSearchSection: function() {
+            document.querySelector('.section--search').classList.add('section--invisible');
+        },
+
+        showSearchSection: function() {
+            document.querySelector('.section--search').classList.remove('section--invisible');
+        },
+
+        populateSearchList: function(items) {
+            const self = this;
+
+            const list = document.getElementById(selectors.searchList);
+            list.innerHTML = '';
+
+            const p = document.querySelector('.search-feedback');
+
+            if (!items.length) {
+                if (!p) {
+                    const p = document.createElement('p');
+                    p.className = 'search-feedback';
+
+                    p.appendChild(document.createTextNode('Nothing found'));
+
+                    list.parentElement.insertBefore(p, list);
+                }
+            } else {
+                if (p) p.remove();
+            }
+
+            items.forEach(function(item) {
+                self.appendToList('search', item);
+            });
         }
     }
 })();
@@ -447,6 +558,15 @@ const ItemsController = (function() {
             });
 
             return items[type][idx];
+        },
+
+        searchItems: function(text) {
+            text = text.toLowerCase();
+            let data = [...items.notes, ...items.tasks, ...items.reminders];
+
+            return data.filter(function(item) {
+                return item.title.toLowerCase().indexOf(text) !== -1;
+            })
         }
     }
 })();
@@ -551,6 +671,44 @@ const App = (function(UI, IC) {
                 .addEventListener('click', function(e) {
                     controlsHandler(e, 'reminders');
                 });
+        
+        // Event listener for filter
+        document.querySelector(selectors.filterBox)
+                .addEventListener('click', function(e) {
+                    const el = e.target.closest('.filter__icon');
+
+                    if (el && el.classList.contains('filter__icon--done')) {
+                        let tasks = IC.getData().tasks;
+                        tasks = tasks.filter(function(task) {
+                            return task.done;
+                        });
+
+                        UI.filterTasks('done', tasks);
+                    } else if (el && el.classList.contains('filter__icon--not-done')) {
+                        let tasks = IC.getData().tasks;
+                        tasks = tasks.filter(function(task) {
+                            return !task.done;
+                        });
+
+                        UI.filterTasks('not-done', tasks);
+                    } else if (el && el.classList.contains('filter__icon--refresh')) {
+                        let tasks = IC.getData().tasks;
+                        UI.filterTasks('refresh', tasks);
+                    }
+                });
+
+        // Event listener for search input field
+        document.getElementById(selectors.searchInput)
+                .addEventListener('input', function(e) {
+                    if (!e.target.value) {
+                        UI.hideSearchSection();
+                    } else {
+                        UI.showSearchSection();
+                        const items = IC.searchItems(e.target.value);
+                        
+                        UI.populateSearchList(items);
+                    }
+                });
     }
 
     function create(e) {
@@ -588,7 +746,7 @@ const App = (function(UI, IC) {
 
         UI.closeModal();
         UI.clearInputs();
-        UI.appendToList(item);
+        UI.appendToList(null, item);
 
         resetFormValidationState();
     }
@@ -668,6 +826,7 @@ const App = (function(UI, IC) {
         if (el) {
             const actionType = el.classList[1];
             const id = parseInt(parent.dataset.id, 10);
+            let item;
 
             switch (actionType) {
                 case 'item__controls-icon--remove':
@@ -676,7 +835,7 @@ const App = (function(UI, IC) {
 
                     break;
                 case 'item__controls-icon--edit':
-                    const item = IC.getItem(type, id);
+                    item = IC.getItem(type, id);
 
                     if (item.type === 'note') {
                         UI.setGroupVisibility(selectors.groupDate, 'invisible');
@@ -692,6 +851,18 @@ const App = (function(UI, IC) {
                     setFormState('edit');
                     UI.openModal();
                     UI.fillForm(item);
+                    break;
+                case 'item__controls-icon--done':
+                    item = IC.getItem(type, id);
+                    item.done = true;
+
+                    UI.updateItem(item);
+                    break;
+                case 'item__controls-icon--not-done':
+                    item = IC.getItem(type, id);
+                    item.done = false;
+
+                    UI.updateItem(item);
                     break;
                 default:
                     break;

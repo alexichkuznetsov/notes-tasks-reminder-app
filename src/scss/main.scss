@@ -280,12 +280,18 @@
             height: 4rem;
         }
 
-        &--done:hover {
+        &--done:hover,
+        &--done-active {
             fill: $color-green;
         }
 
-        &--not-done:hover {
+        &--not-done:hover,
+        &--not-done-active {
             fill: $color-red;
+        }
+
+        &--refresh:hover {
+            fill: $color-blue-primary;
         }
 
         &:not(:last-child) {
@@ -337,7 +343,19 @@
         &--reminders::before {
             background-image: url('../img/icon-reminders--white.svg');
         }
+
+        &--search::before {
+            background-image: url('../img/icon-search--white.svg');
+        }
     }
+}
+
+.search-feedback {
+    font-size: 2.4rem;
+    color: #fff;
+    margin-left: 6rem;
+
+    @media only screen and (max-width: $bp-sm) { margin-left: 7rem; }
 }
 
 // Items list
